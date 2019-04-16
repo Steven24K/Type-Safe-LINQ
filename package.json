@@ -1,0 +1,29 @@
+{
+  "name": "type-safe-linq",
+  "version": "1.0.0",
+  "description": "This is a type safe linq library written in typescript. For the software engineering minor at hogeschool Rotterdam",
+  "main": "index.js",
+  "scripts": {
+    "start": "node build/main.js",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Steven24K/Type-Safe-LINQ.git"
+  },
+  "keywords": [
+    "linq",
+    "typescript"
+  ],
+  "author": "Steven Koerts",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Steven24K/Type-Safe-LINQ/issues"
+  },
+  "homepage": "https://github.com/Steven24K/Type-Safe-LINQ#readme",
+  "dependencies": {
+    "typescript": "^3.4.3"
+  }
+}
