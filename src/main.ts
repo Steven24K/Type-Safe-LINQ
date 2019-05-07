@@ -62,7 +62,7 @@ students.Select("name").Select("surname") or students.Select("name", "surname") 
 SELECT name, surname
 FROM students
 */
-let q1 = t1.Select("name").Select("surname")
+let q1 = t1.Select("name").Select("surname").Select("id").Select("age", "email")
 let q2 = t1.Select("name", "surname")
 
 console.log(q1.toList().toArray())
@@ -72,7 +72,8 @@ students.Select("name", "surname").Include("grades", q => q.Select("courseId", "
 SELECT name, surname, courseId, grade
 FROM students, grades
 */
-let q3 = t1.Select("name", "surname").Include("Grade", q => q.Select("courseId", "grade", "studentId"))
+let q3 = t1.Select("name", "surname").Include("Grades", t2, q => q.Select("courseId", "grade"))
+
 
 /*
 students.Select("name", "surname").Include("grades", q => q.Select("courseId", "grade")).WHERE(q => grades.studentId == q.studentId) is equivalent to the following SQL syntax: 
