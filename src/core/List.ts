@@ -1,5 +1,6 @@
 import { Pair } from "./Pair";
 import { Unit } from "../utils/Unit";
+import { Func } from "../utils/Func";
 
 type ListType<T> = {
     Kind: "Cons",
@@ -17,7 +18,11 @@ type ListOperations<T> = {
     toArray: (this: List<T>) => T[]
     bind: <U>(this: List<T>, q: (x: T) => List<U>) => List<U>
     count: (this: List<T>) => number
+    filter: (this: List<T>, predicate: Func<T, boolean>) => List<T>
+    splitAt: (this: List<T>, i: number) => Pair<List<T>, List<T>>
     zip: <U>(this: List<T>, list: List<U>) => List<Pair<T, U>>
+    merge: (this: List<T>, list: List<T>) => List<T>
+    sort: (this: List<T>) => List<T>
 }
 
 export type List<T> = ListType<T> & ListOperations<T>
@@ -56,6 +61,25 @@ const ListOperations = <T>(): ListOperations<T> => ({
     count: function (this: List<T>): number {
         return this.reduce((s, x) => s + 1, 0)
     }, 
+    filter: function (this: List<T>, predicate: Func<T, boolean>): List<T> {
+        return this.reduce((s, x) => {
+            if (predicate.f(x)) {
+                return Cons(x, s)
+            } else {
+                return s
+            }
+        }, Empty())
+    },
+    splitAt: function (this: List<T>, i: number): Pair<List<T>, List<T>> {
+        if (this.Kind == "Empty") {
+            throw "Cannot split empty list"
+        } else if(i == 0) {
+            return Pair(Cons(this.Head, Empty()), this.Tail)
+        } else {
+            let t = this.Tail.splitAt(i-1)
+            return Pair(Cons(this.Head, t.First), t.Second)
+        }
+    },
     zip: function <U>(this: List<T>, list: List<U>): List<Pair<T, U>> {
         if (this.count() != list.count()) {
             throw "Not equal length exception"
@@ -65,6 +89,30 @@ const ListOperations = <T>(): ListOperations<T> => ({
             return Cons(Pair(this.Head, list.Head), this.Tail.zip(list.Tail))
         } else {
             throw "Something went wrong exception"
+        }
+    }, 
+    merge: function (this: List<T>, list: List<T>): List<T> {
+        if (this.Kind == "Empty") {
+            return list
+        } else if (list.Kind == "Empty") {
+            return this
+        } else {
+            if (this.Head <= list.Head) {
+                return Cons(this.Head, this.Tail.merge(list))
+            } else {
+                return Cons(list.Head, this.merge(list.Tail))
+            }
+        }
+    },
+    sort: function (this: List<T>): List<T> {
+        if (this.count() == 1) {
+            return this
+        } else {
+            let middle = Math.floor(this.count() / 2 -1)
+            let p = this.splitAt(middle)
+            let left = p.First.sort()
+            let right = p.Second.sort()
+            return left.merge(right)
         }
     }
 

@@ -16,3 +16,4 @@ export let omitMany = <T, K extends keyof T>(entity: T, props: K[]): Omit<T, K> 
 
 
 //omitMany(student1, ["name", "age", "email"])
+

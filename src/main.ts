@@ -6,6 +6,9 @@ import { Unit } from "./utils/Unit";
 import { Grade } from "./models/Grade";
 import { Omit, omitMany, omitOne } from "./utils/Omit";
 import { pickMany } from "./utils/Pick";
+import { Filter } from "./utils/PickIf";
+import { ListType } from "./utils/ListType";
+import { Func } from "./utils/Func";
 
 
 // __TEST LIST__
@@ -35,29 +38,23 @@ let l2 = Cons({ surname: "Robinson" }, Cons({ surname: "Paisley" }, Cons({ surna
 // console.log(b.toArray())
 
 //__TEST TABLE With dummy data__
-let student1: Student = { id: 1, name: "George", surname: "Strait", age: 66, email: "info@georgestrait.com" }
-let student2: Student = { id: 2, name: "Brad", surname: "Paisley", age: 46, email: "info@bradpaisley.com" }
-let student3: Student = { id: 3, name: "Kane", surname: "Brown", age: 25, email: "info@kanbrown.com" }
-let student4: Student = { id: 4, name: "Luke", surname: "Bryan", age: 42, email: "info@lukebryan.com" }
-let student5: Student = { id: 5, name: "Keith", surname: "Urban", age: 66, email: "info@keithurban.com" }
-let student6: Student = { id: 6, name: "Blake", surname: "Shelton", age: 46, email: "info@blakeshelton.com" }
-let student7: Student = { id: 7, name: "Carie", surname: "Underwood", age: 25, email: "info@carie.com" }
-let student8: Student = { id: 8, name: "Miranda", surname: "Lambert", age: 42, email: "info@lambert.com" }
+let student1: Student = { id: 1, name: "George", surname: "Strait", age: 66, email: "info@georgestrait.com", Grades: Cons({ courseId: "SWE01", studentId: 1, grade: 10 }, Empty()) }
+let student2: Student = { id: 2, name: "Brad", surname: "Paisley", age: 46, email: "info@bradpaisley.com", Grades: Cons({ courseId: "SWE01", studentId: 1, grade: 10 }, Empty()) }
+let student3: Student = { id: 3, name: "Kane", surname: "Brown", age: 25, email: "info@kanbrown.com", Grades: Cons({ courseId: "SWE01", studentId: 1, grade: 10 }, Empty()) }
+let student4: Student = { id: 4, name: "Luke", surname: "Bryan", age: 42, email: "info@lukebryan.com", Grades: Cons({ courseId: "SWE01", studentId: 1, grade: 10 }, Empty()) }
+let student5: Student = { id: 5, name: "Keith", surname: "Urban", age: 66, email: "info@keithurban.com", Grades: Cons({ courseId: "SWE01", studentId: 1, grade: 10 }, Empty()) }
+let student6: Student = { id: 6, name: "Blake", surname: "Shelton", age: 46, email: "info@blakeshelton.com", Grades: Cons({ courseId: "SWE01", studentId: 1, grade: 10 }, Empty()) }
+let student7: Student = { id: 7, name: "Carie", surname: "Underwood", age: 25, email: "info@carie.com", Grades: Cons({ courseId: "SWE01", studentId: 1, grade: 10 }, Empty()) }
+let student8: Student = { id: 8, name: "Miranda", surname: "Lambert", age: 42, email: "info@lambert.com", Grades: Cons({ courseId: "SWE01", studentId: 1, grade: 10 }, Empty()) }
+let student9: Student = {id: 9, name: "Ruud", surname: "Hermans", age: 60, email: "ruud.hermans@gmail.com", Grades: Empty()}
 
-
-let grade1: Grade = { courseId: "SWE01", studentId: 1, grade: 10 }
-let grade2: Grade = { courseId: "DEV06", studentId: 2, grade: 7 }
-let grade3: Grade = { courseId: "ANL7", studentId: 3, grade: 6 }
-let grade4: Grade = { courseId: "DEV01", studentId: 4, grade: 8 }
 
 let students = Cons(student1, Cons(student2, Cons(student3, Cons(student4,
-    Cons(student5, Cons(student6, Cons(student7, Cons(student8, Empty()))))))))
+    Cons(student5, Cons(student6, Cons(student7, Cons(student8, Cons(student9, Empty())))))))))
 
-let grades = Cons(grade1, Cons(grade2, Cons(grade3, Cons(grade4, Empty()))))
 
 // Tables where the operation are on performed
 let t1 = createTable(students)
-let t2 = createTable(grades)
 
 /*
 students.Select("name").Select("surname") or students.Select("name", "surname") is equivalent to the following SQL syntax: 
@@ -68,6 +65,7 @@ FROM students
 let q1 = t1.Select("name").Select("surname").Select("id").Select("age", "email")
 let q2 = t1.Select("name", "surname")
 
+
 // console.log(q1.toList().toArray())
 // console.log(q2.toList().toArray())
 
@@ -76,19 +74,35 @@ students.Select("name", "surname").Include("grades", q => q.Select("courseId", "
 SELECT name, surname, courseId, grade
 FROM students, grades
 */
-let q3 = t1.Select("name", "surname").Select("id").Include("Grades", t2, q => q.Select("courseId", "grade").Select("studentId"))
+let q3 = t1.Select("name", "surname").Include("Grades", q => q.Select("grade", "studentId"))
+// let r1 = q3.toList()
+// r1.map(x => x.Grades.map(x => x))
 
-console.log(q3.toList().toArray())
+//console.log(q3.toList().toArray())
+
 
 /*
-students.Select("name", "surname").Include("grades", q => q.Select("courseId", "grade")).WHERE(q => grades.studentId == q.studentId) is equivalent to the following SQL syntax: 
-SELECT name, surname, courseId, grade
-FROM students, grades
-WHERE students.studentId = grades.studentId
+students.Select("surname", "age").OrderBy("age", "ASC") is equivalent to the following SQL syntax:
+SELECT surname, age
+FROM students
+ORDER BY age ASC
 */
 
+let q4 = t1.Select("surname", "age").OrderBy("age", "ASC")
 
+/*
+students.Select("name", "surname").WHERE(q => grades.studentId == q.studentId) is equivalent to the following SQL syntax: 
+SELECT surname, age
+FROM students
+WHERE name == "Hermans"
+*/
 
+const GreaterThen = Func<number, Func<number, boolean>>(n => Func(x => x > n))
+const Equals = <a>(selector: a) => Func<a, boolean>(x => x == selector)
+// TODO: Implement all operators AND, OR, SmallerThen, SmallerOrEquals, GreaterOrEquals, NOT
+let q5 = t1.Select("name", "surname", "age").Where("surname", Equals("Brown"))
+
+console.log(q5.toList().toArray())
 
 
 
@@ -170,3 +184,25 @@ console.log(`Object 4: x = ${object4.x}`)
 // But is there an alternative of deleting or omiting a property from an object, without loosing the original object? 
 
 */
+
+
+// Inclusion ;) Include
+type R = Filter<Student, List<any>>
+type P = "grade"
+let a: R = "Grades"
+let query1: (_: Table<ListType<Student[R]>, Unit>) => Table<Omit<ListType<Student[R]>, P>, Pick<ListType<Student[R]>, P>> = (q) => q.Select("grade")
+
+// Is the same as bind or flatMap as some of you would like to call it;)
+let res1 = join_list(students.map(student => query1(createTable(student[a])).toList() ))
+// or...
+let res2 = students.bind(student => query1(createTable(student[a])).toList() )
+// The type of res1 and res2 is List<{grade: number}>
+
+let included_students = students.map(student => {
+    let without_grades = omitOne(student, a)
+
+    return {[a]: res2}
+})
+
+//included_students.map(x => )
+

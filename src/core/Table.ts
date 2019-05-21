@@ -1,23 +1,29 @@
-import { List, Empty, merge_list_types, createList } from "./List";
+import { List, Empty, merge_list_types, createList, join_list, Cons } from "./List";
 import { Pair } from "./Pair";
-import { Omit, omitMany } from "../utils/Omit";
+import { Omit, omitMany, omitOne } from "../utils/Omit";
 import { Unit } from "../utils/Unit";
-import { pickMany } from "../utils/Pick";
+import { pickMany, pickOne } from "../utils/Pick";
 import { Context } from "./Context";
+import { Filter } from "../utils/PickIf";
+import { Student } from "../models/Student";
+import { ListType } from "../utils/ListType";
+import { Grade } from "../models/Grade";
+import { ChangeType } from "../utils/ChangeType";
+import { Func } from "../utils/Func";
 
-type Table<T, U> = {
+export type Table<T, U> = {
     readonly data: Pair<List<T>, List<U>>
     Select: <K extends keyof T>(this: Table<T, U>, ...properties: K[]) => Table<Omit<T, K>, Pick<T, K> & U>
-    Include: <R extends keyof Context, P extends keyof Context[R]>(
+    Include: <R extends Filter<T, List<any>>, P extends keyof ListType<T[R]>>(
         record: R,
-        data: Table<Context[R], Unit>,
-        q: (_: Table<Context[R], Unit>) => Table<Omit<Context[R], P>, Pick<Context[R], P>>
+        q: (_: Table<ListType<T[R]>, Unit>) => Table<Omit<ListType<T[R]>, P>, Pick<ListType<T[R]>, P>>
     ) =>
-        Table<T & { record: Array<Pick<Context[R], P>> }, U & { record: Array<Pick<Context[R], P>> }> //Table<{ The untouched set + the included values }, {name: string, Grades: [{ courseId: string, grade: number }]}>
+        Table<Omit<T, R>, U & { [r in R]: List<Pick<ListType<T[R]>, P>> }>
+    //Table<{ The untouched set + the included values }, {name: string, Grades: [{ courseId: string, grade: number }]}>
 
 
-    Where: (predicate: (_: keyof U) => boolean) => Table<T, U>
-    OrderBy: (attribute: keyof T, order: "ASC" | "DESC") => Table<T, U>
+    Where: <F extends keyof U>(key: F, predicate: Func<U[F], boolean>) => Table<T, U>
+    OrderBy: (attribute: keyof U, order: "ASC" | "DESC") => Table<T, U>
     toList: (this: Table<T, U>) => List<U>
 }
 
@@ -34,27 +40,28 @@ export const Table = <T, U>(data: Pair<List<T>, List<U>>): Table<T, U> => ({
 
         return Table(result)
     },
-    // Make Include support the original name for the recor
-    Include: function <R extends keyof Context, P extends keyof Context[R]>(
+
+    Include: function <R extends Filter<T, List<any>>, P extends keyof ListType<T[R]>>(
         record: R,
-        table: Table<Context[R], Unit>,
-        q: (_: Table<Context[R], Unit>) => Table<Omit<Context[R], P>, Pick<Context[R], P>>
+        q: (_: Table<ListType<T[R]>, Unit>) => Table<Omit<ListType<T[R]>, P>, Pick<ListType<T[R]>, P>>
     ):
-        Table<T & { record: Array<Pick<Context[R], P>> }, U & { record: Array<Pick<Context[R], P>> }> {
-        let table_selection = q(table).toList().toArray()
-        let result = this.data.map(
-            first => first.map(entry => ({ ...entry, record: table_selection})),
-            second => second.map(entry => ({ ...entry, record: table_selection }))
-        )
+        Table<Omit<T, R>, U & { [r in R]: List<Pick<ListType<T[R]>, P>> }> {
 
-        return Table(result)
-    },
+        //this.data.First.bind(entry => q(createTable(entry[record])).toList() )
 
-    Where: function (predicate: (_: keyof U) => boolean): Table<T, U> {
         return null!
     },
-    OrderBy: function (attribute: keyof T, order: "ASC" | "DESC"): Table<T, U> {
-        return null!
+
+    Where: function <F extends keyof U>(key: F, predicate: Func<U[F], boolean>): Table<T, U> {
+        return Table(this.data.mapRight(second => second.reduce((s, x) => {
+            if (predicate.f(x[key])) {
+                return Cons(x, s)
+            }
+            return s
+        }, Empty<U>())))
+    },
+    OrderBy: function (attribute: keyof U, order: "ASC" | "DESC"): Table<T, U> {
+        return Table(this.data.map(l1 => l1.sort(), l2 => l2.sort()))
     },
     toList: function (this: Table<T, U>): List<U> {
         return this.data.Second

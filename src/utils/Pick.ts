@@ -8,3 +8,4 @@ export let pickMany = <T, K extends keyof T>(entity: T, props: K[]) => {
 
 
 //pickMany(student1, ["name", "surname"])
+
