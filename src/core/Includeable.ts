@@ -1,7 +1,7 @@
-import { Filter } from "../utils/PickIf";
+import { Filter } from "../types/PickIf";
 import { List } from "./List";
-import { ListType } from "../utils/ListType";
-import { Unit } from "../utils/Unit";
+import { ListType } from "../types/ListType";
+import { Unit } from "../types/Unit";
 import { Table } from "./Table";
 import { Omit } from "../utils/Omit";
 import { Pair } from "./Pair";

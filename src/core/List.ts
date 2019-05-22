@@ -1,5 +1,5 @@
 import { Pair } from "./Pair";
-import { Unit } from "../utils/Unit";
+import { Unit } from "../types/Unit";
 import { Func } from "../utils/Func";
 
 type ListType<T> = {

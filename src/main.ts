@@ -2,13 +2,14 @@ import { Cons, Empty, join_list, createList, List, merge_list_types } from "./co
 import { Student } from "./models/Student";
 import { createTable, Table } from "./core/Table";
 import { Pair } from "./core/Pair";
-import { Unit } from "./utils/Unit";
+import { Unit } from "./types/Unit";
 import { Grade } from "./models/Grade";
 import { Omit, omitMany, omitOne } from "./utils/Omit";
 import { pickMany } from "./utils/Pick";
-import { Filter } from "./utils/PickIf";
-import { ListType } from "./utils/ListType";
+import { Filter } from "./types/PickIf";
+import { ListType } from "./types/ListType";
 import { Func } from "./utils/Func";
+import { And, StartsWith, EndsWith } from "./core/WhereOperators";
 
 
 // __TEST LIST__
@@ -97,10 +98,9 @@ FROM students
 WHERE name == "Hermans"
 */
 
-const GreaterThen = Func<number, Func<number, boolean>>(n => Func(x => x > n))
-const Equals = <a>(selector: a) => Func<a, boolean>(x => x == selector)
-// TODO: Implement all operators AND, OR, SmallerThen, SmallerOrEquals, GreaterOrEquals, NOT
-let q5 = t1.Select("name", "surname", "age").Where("surname", Equals("Brown"))
+
+
+let q5 = t1.Select("name", "surname", "age").Where("surname", And(StartsWith("B"), EndsWith("n")))
 
 console.log(q5.toList().toArray())
 

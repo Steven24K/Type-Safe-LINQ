@@ -1,14 +1,10 @@
-import { List, Empty, merge_list_types, createList, join_list, Cons } from "./List";
+import { List, Empty, merge_list_types, createList, Cons } from "./List";
 import { Pair } from "./Pair";
 import { Omit, omitMany, omitOne } from "../utils/Omit";
-import { Unit } from "../utils/Unit";
-import { pickMany, pickOne } from "../utils/Pick";
-import { Context } from "./Context";
-import { Filter } from "../utils/PickIf";
-import { Student } from "../models/Student";
-import { ListType } from "../utils/ListType";
-import { Grade } from "../models/Grade";
-import { ChangeType } from "../utils/ChangeType";
+import { Unit } from "../types/Unit";
+import { pickMany } from "../utils/Pick";
+import { Filter } from "../types/PickIf";
+import { ListType } from "../types/ListType";
 import { Func } from "../utils/Func";
 
 export type Table<T, U> = {

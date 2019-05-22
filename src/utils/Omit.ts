@@ -8,12 +8,8 @@ export let omitOne = <T, K extends keyof T>(entity: T, prop: K): Omit<T, K> => {
 // Refactor this into a oneliner
 export let omitMany = <T, K extends keyof T>(entity: T, props: K[]): Omit<T, K> => {
     let result = entity as Omit<T, K>
-    for (let prop in props) {
-        result = omitOne(entity, prop as K)
-    }
+    props.forEach(prop => {
+        result = omitOne(result, prop as unknown as keyof Omit<T, K>) as Omit<T, K>
+    })
     return result
 }
-
-
-//omitMany(student1, ["name", "age", "email"])
-
