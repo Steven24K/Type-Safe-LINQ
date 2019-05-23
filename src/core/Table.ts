@@ -10,6 +10,7 @@ import { Func } from "../utils/Func";
 export type Table<T, U> = {
     readonly data: Pair<List<T>, List<U>>
     Select: <K extends keyof T>(this: Table<T, U>, ...properties: K[]) => Table<Omit<T, K>, Pick<T, K> & U>
+
     Include: <R extends Filter<T, List<any>>, P extends keyof ListType<T[R]>>(
         record: R,
         q: (_: Table<ListType<T[R]>, Unit>) => Table<Omit<ListType<T[R]>, P>, Pick<ListType<T[R]>, P>>
@@ -19,7 +20,9 @@ export type Table<T, U> = {
 
 
     Where: <F extends keyof U>(key: F, predicate: Func<U[F], boolean>) => Table<T, U>
+
     OrderBy: (attribute: keyof U, order: "ASC" | "DESC") => Table<T, U>
+    
     toList: (this: Table<T, U>) => List<U>
 }
 

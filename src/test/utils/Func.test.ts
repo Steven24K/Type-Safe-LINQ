@@ -1,4 +1,4 @@
-import { Func } from "../../utils/Func";
+import { Func, Identity } from "../../utils/Func";
 
 let incr = Func<number, number>(x => x + 1)
 let double_incr = incr.then(incr)
@@ -12,4 +12,8 @@ test(`Func test: Excecution, composition and loops`, () => {
     expect(repeat_incr(5).f(3)).toBe(8)
     expect(is_even.f(3)).toBe(false)
     expect(incr_until_even.f(3)).toBe(4)
+})
+
+test(`Test the Identity Func`, () => {
+    expect(Identity().f(3)).toBe(3)
 })

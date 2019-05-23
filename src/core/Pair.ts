@@ -27,6 +27,3 @@ export const Pair = <T, U>(first: T, second: U): Pair<T, U> => ({
         return this.map(IdentityLambda(), g)
     }
 })
-
-// let x = Pair(4, "Hello World")
-// x.mapRight(x => x.length)

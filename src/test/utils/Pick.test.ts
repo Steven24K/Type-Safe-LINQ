@@ -12,3 +12,4 @@ test(`PickMany attributes from User, pick 'name', 'age', 'maried'`, () => {
     expect(pickMany(test_user, ["name", "age", "maried"])).toEqual({ name: "something", age: 21, maried: false })
 })
 
+let lambda = (x: number) => {x}

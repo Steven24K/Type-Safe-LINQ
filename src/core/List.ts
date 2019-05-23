@@ -10,6 +10,18 @@ type ListType<T> = {
     Kind: "Empty"
 }
 
+// ASC and DESC operations for List.sort
+type Comparer<T> = {
+    ASC: () => Func<T, boolean>
+    DESC: () => Func<T, boolean>
+}
+type Comparers = keyof Comparer<any>
+
+const Comparer = <T>(comparer: T): Comparer<T> => ({
+    ASC: () => Func<T, boolean>(x => x <= comparer),
+    DESC: () => Func<T, boolean>(x => comparer <= x) 
+})
+
 type ListOperations<T> = {
     reduce: <U>(this: List<T>, f: (state: U, x: T) => U, accumulator: U) => U
     map: <U>(this: List<T>, f: (_: T) => U) => List<U>
@@ -21,8 +33,8 @@ type ListOperations<T> = {
     filter: (this: List<T>, predicate: Func<T, boolean>) => List<T>
     splitAt: (this: List<T>, i: number) => Pair<List<T>, List<T>>
     zip: <U>(this: List<T>, list: List<U>) => List<Pair<T, U>>
-    merge: (this: List<T>, list: List<T>) => List<T>
-    sort: (this: List<T>) => List<T>
+    merge: (this: List<T>, list: List<T>, order: Comparers) => List<T>
+    sort: (this: List<T>, order?: Comparers) => List<T>
 }
 
 export type List<T> = ListType<T> & ListOperations<T>
@@ -91,28 +103,29 @@ const ListOperations = <T>(): ListOperations<T> => ({
             throw "Something went wrong exception"
         }
     }, 
-    merge: function (this: List<T>, list: List<T>): List<T> {
+    // Can only sort in ASC order, it is recommended to use List.sort
+    merge: function (this: List<T>, list: List<T>, order: Comparers): List<T> {
         if (this.Kind == "Empty") {
             return list
         } else if (list.Kind == "Empty") {
             return this
         } else {
-            if (this.Head <= list.Head) {
-                return Cons(this.Head, this.Tail.merge(list))
+            if (Comparer(list.Head)[order]().f(this.Head)/*this.Head <= list.Head*/) {
+                return Cons(this.Head, this.Tail.merge(list, order))
             } else {
-                return Cons(list.Head, this.merge(list.Tail))
+                return Cons(list.Head, this.merge(list.Tail, order))
             }
         }
     },
-    sort: function (this: List<T>): List<T> {
+    sort: function (this: List<T>, order: Comparers = "ASC"): List<T> {
         if (this.count() == 1) {
             return this
         } else {
             let middle = Math.floor(this.count() / 2 -1)
             let p = this.splitAt(middle)
-            let left = p.First.sort()
-            let right = p.Second.sort()
-            return left.merge(right)
+            let left = p.First.sort(order)
+            let right = p.Second.sort(order)
+            return left.merge(right, order)
         }
     }
 

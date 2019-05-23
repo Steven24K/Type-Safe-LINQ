@@ -57,6 +57,7 @@ let students = Cons(student1, Cons(student2, Cons(student3, Cons(student4,
 // Tables where the operation are on performed
 let t1 = createTable(students)
 
+
 /*
 students.Select("name").Select("surname") or students.Select("name", "surname") is equivalent to the following SQL syntax: 
 SELECT name, surname
