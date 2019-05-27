@@ -82,5 +82,16 @@ FROM students
 ORDER BY age ASC
 */
 
-//let q8 = students.Select("surname", "age").OrderBy("age", "ASC")
+let q8 = students.Select("name", "surname", "age").OrderBy("age", "DESC")
+let q9 = students.Select("name", "surname").OrderBy("name", "ASC")
 
+// console.log(q8.toList().toArray())
+// console.log(q9.toList().toArray())
+
+
+/*
+students.Select("name").Include("Grades", q => q.Select("grade")).GroupBy(???) is equivalent to the following SQL syntax:
+SELECT name, AVG(grade)
+FROM students, grades
+GROUP BY name
+*/

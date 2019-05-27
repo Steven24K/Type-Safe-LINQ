@@ -31,6 +31,7 @@ export const Or = <a>(p1: Func<a, boolean>, p2: Func<a, boolean>) => Func<a, boo
 export const Not = () => Func<boolean, boolean>(x => !x)
 
 export const NotEquals = <a>(selector: a) => Equals(selector).then(Not())
+
 // Current sititation:
 // students.Select("name", "age").Where("name", StartsWith("B"))
 
