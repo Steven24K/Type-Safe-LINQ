@@ -15,14 +15,14 @@ export type Table<T, U> = {
         record: R,
         q: (_: Table<ListType<T[R]>, Unit>) => Table<Omit<ListType<T[R]>, P>, Pick<ListType<T[R]>, P>>
     ) =>
-        Table<Omit<T, R>, U & { [r in R]: List<Pick<ListType<T[R]>, P>> }>
+        Table<Omit<T, R>, U & { [r in R]: /*List( We use Array for prety printing)*/Array<Pick<ListType<T[R]>, P>> }>
     //Table<{ The untouched set + the included values }, {name: string, Grades: [{ courseId: string, grade: number }]}>
 
 
     Where: <F extends keyof U>(key: F, predicate: Func<U[F], boolean>) => Table<T, U>
 
     OrderBy: (attribute: keyof U, order: "ASC" | "DESC") => Table<T, U>
-    
+
     toList: (this: Table<T, U>) => List<U>
 }
 
@@ -44,11 +44,29 @@ export const Table = <T, U>(data: Pair<List<T>, List<U>>): Table<T, U> => ({
         record: R,
         q: (_: Table<ListType<T[R]>, Unit>) => Table<Omit<ListType<T[R]>, P>, Pick<ListType<T[R]>, P>>
     ):
-        Table<Omit<T, R>, U & { [r in R]: List<Pick<ListType<T[R]>, P>> }> {
+        Table<Omit<T, R>, U & { [r in R]: Array<Pick<ListType<T[R]>, P>> }> {
 
-        //this.data.First.bind(entry => q(createTable(entry[record])).toList() )
+        let result1 = this.data.First.map(entry => ({ [record]: q(createTable(entry[record] as any)).toList().toArray() }))
 
-        return null!
+        let result2 = this.data.Second.zip(result1)
+
+        let result3 = merge_list_types(result2)
+
+        let removed_record = this.data.First.map(entry => omitOne(entry, record))
+        
+        return Table(Pair(removed_record, result3)) as any
+
+        // let selection = this.data.Second.bind(entry_U => 
+        //     this.data.First.bind(entry_T => q(createTable(entry_T[record] as any)).toList())
+        //     )
+
+        // console.log(selection.toArray())
+        // let removed_record: List<Omit<T, R>> = this.data.First.map(entry => omitOne(entry, record))
+        // //console.log(removed_record.toArray())
+        // let result = this.data.Second.map(entry => ({ ...entry, [record]: selection }))
+
+
+        // return Table(Pair(removed_record, result)) as any
     },
 
     Where: function <F extends keyof U>(key: F, predicate: Func<U[F], boolean>): Table<T, U> {

@@ -7,6 +7,7 @@ import { Pair } from "./Pair";
  * 
  */
 
+
 export const GreaterThen = (n: number) => Func<number, boolean>(x => x > n)
 
 export const SmallerThen = (n: number) => Func<number, boolean>(x => x < n)
