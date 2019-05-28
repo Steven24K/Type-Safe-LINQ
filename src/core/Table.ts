@@ -9,14 +9,33 @@ import { Func } from "../utils/Func";
 import { Comperator } from "../utils/Comperator";
 import { mergeSort } from "../utils/mergeSort";
 
+interface initialTable<T, U> {
+    readonly data: Pair<List<T>, List<U>>
+    Select: <K extends keyof T>(this: initialTable<T, U>, ...properties: K[]) => Table<Omit<T, K>, Pick<T, K> & U>
+}
 
-export interface Table<T, U> {
+const initialTable = <T, U>(data: Pair<List<T>, List<U>>): initialTable<T, U> => ({
+    data: data, 
+    Select: function <K extends keyof T>(this: initialTable<T, U>, ...properties: K[]): Table<Omit<T, K>, Pick<T, K> & U> {
+        let selection = this.data.First.map(entry => pickMany(entry, properties))
+
+        let result = this.data.map(
+            first => first.map(entry => omitMany(entry, properties))
+            ,
+            second => merge_list_types(second.zip(selection))
+        )
+
+        return Table(result)
+    },
+})
+
+interface Table<T, U> {
     readonly data: Pair<List<T>, List<U>>
     Select: <K extends keyof T>(this: Table<T, U>, ...properties: K[]) => Table<Omit<T, K>, Pick<T, K> & U>
 
     Include: <K extends Filter<T, List<any>>, P extends keyof ListType<T[K]>>(
         record: K,
-        q: (_: Table<ListType<T[K]>, Unit>) => Table<Omit<ListType<T[K]>, P>, Pick<ListType<T[K]>, P>>
+        q: (_: initialTable<ListType<T[K]>, Unit>) => Table<Omit<ListType<T[K]>, P>, Pick<ListType<T[K]>, P>>
     ) =>
         Table<Omit<T, K>, U & { [key in K]: /*List( We use Array for prety printing)*/Array<Pick<ListType<T[K]>, P>> }>
     //Table<{ The untouched set + the included values }, {name: string, Grades: [{ courseId: string, grade: number }]}>
@@ -29,7 +48,7 @@ export interface Table<T, U> {
     toList: (this: Table<T, U>) => List<U>
 }
 
-export const Table = <T, U>(data: Pair<List<T>, List<U>>): Table<T, U> => ({
+const Table = <T, U>(data: Pair<List<T>, List<U>>): Table<T, U> => ({
     data: data,
     Select: function <K extends keyof T>(this: Table<T, U>, ...properties: K[]): Table<Omit<T, K>, Pick<T, K> & U> {
         let selection = this.data.First.map(entry => pickMany(entry, properties))
@@ -45,7 +64,7 @@ export const Table = <T, U>(data: Pair<List<T>, List<U>>): Table<T, U> => ({
 
     Include: function <K extends Filter<T, List<any>>, P extends keyof ListType<T[K]>>(
         record: K,
-        q: (_: Table<ListType<T[K]>, Unit>) => Table<Omit<ListType<T[K]>, P>, Pick<ListType<T[K]>, P>>
+        q: (_: initialTable<ListType<T[K]>, Unit>) => Table<Omit<ListType<T[K]>, P>, Pick<ListType<T[K]>, P>>
     ):
         Table<Omit<T, K>, U & { [key in K]: Array<Pick<ListType<T[K]>, P>> }> {
 
@@ -79,6 +98,6 @@ export const Table = <T, U>(data: Pair<List<T>, List<U>>): Table<T, U> => ({
 })
 
 // Factory method to create a table
-export const createTable = <T>(list: List<T>): Table<T, Unit> => {
-    return Table(Pair(list, createList(list.count())))
+export const createTable = <T>(list: List<T>): initialTable<T, Unit> => {
+    return initialTable(Pair(list, createList(list.count())))
 }
