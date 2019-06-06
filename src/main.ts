@@ -16,18 +16,17 @@ let student6: Student = { id: 6, name: "Blake", surname: "Shelton", age: 42, ema
 let student7: Student = { id: 7, name: "Carie", surname: "Underwood", age: 36, email: "info@carie.com", Grades: Empty() }
 let student8: Student = { id: 8, name: "Miranda", surname: "Lambert", age: 35, email: "info@lambert.com", Grades: Cons({ courseId: "SWE01", studentId: 8, grade: 10 }, Empty()) }
 let student9: Student = { id: 9, name: "Ruud", surname: "Hermans", age: 60, email: "ruud.hermans@gmail.com", Grades: Empty() }
+let student10: Student = { id: 10, name: "Johny", surname: "Cash", age: 71, email: "johny.cash@yahoo.com", Grades: Cons({ courseId: "DEV8", studentId: 10, grade: 8.5 }, Empty()) }
 
 // Put all data in one List
 let student_data = Cons(student1, Cons(student2, Cons(student3, Cons(student4,
-    Cons(student5, Cons(student6, Cons(student7, Cons(student8, Cons(student9, Empty())))))))))
-
-
+    Cons(student5, Cons(student6, Cons(student7, Cons(student8, Cons(student9, Cons(student10, Empty()))))))))))
 
 // Tables where the operation are on performed
 let students = createTable(student_data)
 
 // Lazy data is a Pair of List of Student and List of Unit, two equal length lists
-let lazy_data = createData(student_data) 
+let lazy_data = createData(student_data)
 
 // A LazyTable which only returns a chain of composable functions to execute
 let lazy_students = createLazyTable<Student>()
@@ -159,7 +158,7 @@ let query10 = null! //TODO
 // console.log(lazy_query3.apply(lazy_data).toList().toArray())
 
 // INCLUDE throws a runtime exception
-console.log(lazy_query4.apply(lazy_data).toList().toArray())
+// console.log(lazy_query4.apply(lazy_data).toList().toArray())
 
 // WHERE
 // console.log(lazy_query5.apply(lazy_data).toList().toArray())
@@ -169,6 +168,7 @@ console.log(lazy_query4.apply(lazy_data).toList().toArray())
 // ORDER BY
 // console.log(lazy_query8.apply(lazy_data).toList().toArray())
 // console.log(lazy_query9.apply(lazy_data).toList().toArray())
+
 
 
 

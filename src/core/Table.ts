@@ -8,15 +8,18 @@ import { ListType } from "../types/ListType";
 import { Func } from "../utils/Func";
 import { Comperator } from "../utils/Comperator";
 import { mergeSort } from "../utils/mergeSort";
+import { Data } from "../types/Data";
 
 
 export interface initialTable<T, U> {
-    readonly data: Pair<List<T>, List<U>>
+    data: Data<T, U>
+
     Select: <K extends keyof T>(this: initialTable<T, U>, ...properties: K[]) => Table<Omit<T, K>, Pick<T, K> & U>
 }
 
-const initialTable = <T, U>(data: Pair<List<T>, List<U>>): initialTable<T, U> => ({
+const initialTable = <T, U>(data: Data<T, U>): initialTable<T, U> => ({
     data: data,
+
     Select: function <K extends keyof T>(this: initialTable<T, U>, ...properties: K[]): Table<Omit<T, K>, Pick<T, K> & U> {
         return Table(this.data.map(
             first => first.map(entry => omitMany(entry, properties)),
@@ -26,7 +29,8 @@ const initialTable = <T, U>(data: Pair<List<T>, List<U>>): initialTable<T, U> =>
 })
 
 export interface Table<T, U> {
-    readonly data: Pair<List<T>, List<U>>
+    data: Data<T, U>
+
     Select: <K extends keyof T>(this: Table<T, U>, ...properties: K[]) => Table<Omit<T, K>, Pick<T, K> & U>
 
     Include: <K extends Filter<T, List<any>>, P extends keyof ListType<T[K]>>(
@@ -44,8 +48,9 @@ export interface Table<T, U> {
     toList: (this: Table<T, U>) => List<U>
 }
 
-export const Table = <T, U>(data: Pair<List<T>, List<U>>): Table<T, U> => ({
+export const Table = <T, U>(data: Data<T, U>): Table<T, U> => ({
     data: data,
+
     Select: function <K extends keyof T>(this: Table<T, U>, ...properties: K[]): Table<Omit<T, K>, Pick<T, K> & U> {
         return Table(this.data.map(
             first => first.map(entry => omitMany(entry, properties)),
@@ -71,7 +76,7 @@ export const Table = <T, U>(data: Pair<List<T>, List<U>>): Table<T, U> => ({
                 return Cons(x, s)
             }
             return s
-        }, Empty<U>())))
+        }, Empty<U>()).reverse()))
     },
 
     OrderBy: function <K extends keyof U>(attribute: K, order: keyof Comperator<T> = "ASC"): Table<T, U> {
