@@ -1,3 +1,7 @@
+import { Student } from "../models/Student";
+import { pickMany } from "../utils/Pick";
+import { Empty } from "../core/List";
+
 /**
  * This is a workarround to generate an Array type that only contains unique values. This example uses recursive type aliases. 
  * 
@@ -26,32 +30,8 @@ export type IsUnique<T extends any[]> = UK0<T, "There are duplicate values in th
 
 // example
 
-let a = <K extends Array<keyof {
-    a: string
-    b: string
-    c: string
-    d: string
-    e: string
-    f: string
-    g: string
-    h: string
-    i: string
-    j: string
-    k: string
-    l: string
-    m: string
-    n: string
-    o: string
-    p: string
-    q: string
-    r: string
-    s: string
-    t: string
-    u: string
-    v: string
-    x: ""
-    y: ''
-    z: 0
-}>>(...props: K & IsUnique<K>) => {}
+let Select = <K extends Array<keyof Student>>(s: Student, ...props: K & IsUnique<K>): Pick<Student, K[number]> => {
+    return pickMany(s, props)
+}
 
-a('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k')
+Select({id: 0, name: "", surname: "", age: 4, Grades: Empty(), email: ""}, 'name', 'age', 'email')

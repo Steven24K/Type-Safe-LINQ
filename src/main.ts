@@ -1,26 +1,22 @@
-import { Cons, Empty } from "./core/List";
+import { Cons, Empty, ListFromArray } from "./core/List";
 import { Student } from "./models/Student";
-import { createTable, Table } from "./core/Table";
-import { And, StartsWith, EndsWith, Or, GreaterThen, Equals, Contains } from "./core/WhereOperators";
-import { Func } from "./utils/Func";
+import { createTable } from "./core/Table";
 import { createLazyTable } from "./core/LazyTable";
 
 
-//__TEST TABLE With dummy data__
-let student1: Student = { id: 1, name: "George", surname: "Strait", age: 67, email: "info@georgestrait.com", Grades: Cons({ courseId: "SWE01", studentId: 1, grade: 7.4 }, Empty()) }
-let student2: Student = { id: 2, name: "Brad", surname: "Paisley", age: 46, email: "info@bradpaisley.com", Grades: Cons({ courseId: "SWE01", studentId: 2, grade: 4.4 }, Empty()) }
-let student3: Student = { id: 3, name: "Kane", surname: "Brown", age: 25, email: "info@kanebrown.com", Grades: Cons({ courseId: "SWE01", studentId: 3, grade: 8.7 }, Empty()) }
-let student4: Student = { id: 4, name: "Luke", surname: "Bryan", age: 42, email: "info@lukebryan.com", Grades: Cons({ courseId: "SWE01", studentId: 4, grade: 9 }, Empty()) }
-let student5: Student = { id: 5, name: "Keith", surname: "Urban", age: 51, email: "info@keithurban.com", Grades: Cons({ courseId: "SWE01", studentId: 5, grade: 5.5 }, Empty()) }
-let student6: Student = { id: 6, name: "Blake", surname: "Shelton", age: 42, email: "info@blakeshelton.com", Grades: Cons({ courseId: "SWE01", studentId: 6, grade: 4 }, Empty()) }
-let student7: Student = { id: 7, name: "Carie", surname: "Underwood", age: 36, email: "info@carie.com", Grades: Empty() }
-let student8: Student = { id: 8, name: "Miranda", surname: "Lambert", age: 35, email: "info@lambert.com", Grades: Cons({ courseId: "SWE01", studentId: 8, grade: 10 }, Empty()) }
-let student9: Student = { id: 9, name: "Ruud", surname: "Hermans", age: 60, email: "ruud.hermans@gmail.com", Grades: Empty() }
-let student10: Student = { id: 10, name: "Johny", surname: "Cash", age: 71, email: "johny.cash@yahoo.com", Grades: Cons({ courseId: "DEV8", studentId: 10, grade: 8.5 }, Empty()) }
-
-// Put all data in one List
-let student_data = Cons(student1, Cons(student2, Cons(student3, Cons(student4,
-    Cons(student5, Cons(student6, Cons(student7, Cons(student8, Cons(student9, Cons(student10, Empty()))))))))))
+//__TEST TABLE With dummy data__ put all data in one List
+let student_data = ListFromArray([
+    Student('George', 'Strait', 67, 'male', Cons({ name: "SWE01", studypoints: 30, grade: 7.4 }, Empty())),
+    Student('Brad', 'Paisley', 46, 'male', Cons({ name: "SWE01", studypoints: 30, grade: 3.2 }, Empty())),
+    Student('Kane', 'Brown', 25, 'male', Cons({ name: "SWE01", studypoints: 30, grade: 1.5 }, Empty())),
+    Student('Luke', 'Bryan', 25, 'male', Cons({ name: "SWE01", studypoints: 30, grade: 5.4 }, Empty())),
+    Student('Keith', 'Urban', 51, 'male', Cons({ name: "SWE01", studypoints: 30, grade: 5.6 }, Empty())),
+    Student('Blake', 'Shelton', 42, 'male', Cons({ name: "SWE01", studypoints: 30, grade: 9 }, Empty())),
+    Student('Carie', 'Underwood', 36, 'female', Cons({ name: "SWE01", studypoints: 30, grade: 8.2 }, Empty())),
+    Student('Miranda', 'Lambert', 35, 'female', Cons({ name: "SWE01", studypoints: 30, grade: 4.4 }, Empty())),
+    Student('Ruud', 'Hermans', 60, 'male', Cons({ name: "SWE01", studypoints: 30, grade: 6.6 }, Empty())),
+    Student('Johny', 'Cash', 71, 'male', Cons({ name: "SWE01", studypoints: 30, grade: 7.2 }, Empty())),
+])
 
 // Tables where the operation are on performed
 let students = createTable(student_data)
@@ -41,11 +37,11 @@ FROM students
 
 let query1 = students.Select("name", "surname") // q1 and q2 have the same type
 let query2 = students.Select("name").Select("surname")
-let query3 = students.Select("name").Select("surname").Select("id").Select("age", "email", "Grades") // Arguments of the next Select results in never[]
+let query3 = students.Select("name").Select("surname").Select("gender").Select("age", "Courses") // Arguments of the next Select results in never[]
 
 let lazy_query1 = lazy_students.Select("name", "surname")
 let lazy_query2 = lazy_students.Select("name").Select("surname")
-let lazy_query3 = lazy_students.Select("name").Select("surname").Select("id").Select("age", "email", "Grades")
+let lazy_query3 = lazy_students.Select("name").Select("surname").Select("gender").Select("age", "Courses")
 
 
 //-------------------------------------------------
@@ -60,9 +56,9 @@ FROM students, grades
 */
 
 
-let query4 = students.Select("name", "surname").Include("Grades", q => q.Select("grade", "studentId"))
+let query4 = students.Select("name", "surname").Include("Courses", q => q.Select("grade", "studypoints"))
 
-let lazy_query4 = lazy_students.Select("name", "surname").Include("Grades", q => q.Select("grade", "studentId"))
+let lazy_query4 = lazy_students.Select("name", "surname").Include("Courses", q => q.Select("grade", "studypoints"))
 
 
 //-------------------------------------------------
@@ -79,12 +75,12 @@ WHERE surname LIKE B% AND surname LIKE %n
 
 let query5 = students.Select("name", "surname", "age").Where(f => f.get("surname").StartsWith("B").And(f => f.get("surname").EndsWith("n")))//.Where(f => Equals(f.get("surname"), f.get("name")))
 let query6 = students.Select("name", "surname", "age").Where(f => f.get("age").GreaterThen(25))
-let query7 = students.Select("name").Select("surname").Include("Grades", q => q.Select("grade").Where(f => f.get("grade").GreaterThen(5.5)))
+let query7 = students.Select("name").Select("surname").Include("Courses", q => q.Select("grade").Where(f => f.get("grade").GreaterThen(5.5)))
 
 
 let lazy_query5 = lazy_students.Select("name", "surname", "age").Where(f => f.get("surname").StartsWith("B").And(f => f.get("surname").EndsWith("n")))
 let lazy_query6 = lazy_students.Select("name", "surname", "age").Where(f => f.get("age").GreaterThen(25))
-let lazy_query7 = lazy_students.Select("name").Select("surname").Include("Grades", q => q.Select("grade").Where(f => f.get("grade").GreaterThen(5.5)))
+let lazy_query7 = lazy_students.Select("name").Select("surname").Include("Courses", q => q.Select("grade").Where(f => f.get("grade").GreaterThen(5.5)))
 
 
 //-------------------------------------------------
@@ -163,14 +159,21 @@ let query10 = null! // TODO
 
 
 /**
+ * **TODO**: 
  * Questions: 
  * - Where operator [CHECK]
- * - Pass an array of unique arguments to the Select operator
- * - Split Table in different interfaces so you can't call i.e. Where before Select
- * - How to implement GroupBy? Type signature and implementation
+ * - Split Table in different interfaces so you can't call i.e. Where before Select [CHECK]
+ * - Unit tests [CHECK only test the lazy table]
+ * - Pass an array of unique arguments to the Select operator [DO NOT MENTION THIS]
+ * - How to implement GroupBy? Type signature and implementation [A 9 is also good enough]
+ * - Documentation + README
+ * - Clean code 
+ * - Prepare for presentation, going for 9 points:) yeaaaaaah!
 */
 
 // Is this worth 2.5 points?
 // I like the notation of because it is equivalent to the SQL notation of: SELECT name, age FROM students WHERE age >= 42 OR name = 'Carie'
-let sample = students.Select('name', 'age').Where(f => f.get('age').GreaterOrEquals(42).Or(f => f.get('name').Equals('Carie')))
-console.log(sample.toList().toArray())
+let sample = students.Select('name', 'age').Where(f => f.get('age').SmallerOrEquals(50).Or(f => f.get('name').Equals('Carie')))
+//console.log(sample.toList().toArray())
+
+

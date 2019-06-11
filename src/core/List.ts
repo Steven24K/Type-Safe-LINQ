@@ -51,6 +51,10 @@ export const createList = (n: number): List<Unit> => {
     return n == 0 ? Empty() : Cons({}, createList(n - 1))
 }
 
+export const ListFromArray = <T>(array: T[]): List<T> => {
+    return array.reduce((s, x) => Cons(x, s) , Empty<T>())
+}
+
 const ListOperations = <T>(): ListOperations<T> => ({
     reduce: function <U>(this: List<T>, f: (state: U, x: T) => U, accumulator: U): U {
         return this.Kind == "Empty" ? accumulator : this.Tail.reduce(f, f(accumulator, this.Head))
