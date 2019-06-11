@@ -1,4 +1,6 @@
 import { Func } from "../utils/Func";
-import { Data } from "./Data";
+import { Table, Table2 } from "../core/Table";
 
-export type Query<A, B, C, D> = Func<Data<A, B>, Data<C, D>>
+
+
+export type Query<A, B, C, D> = Func<Table<A, B>, Table<C, D>>

@@ -1,9 +1,9 @@
 import { Cons, Empty } from "./core/List";
 import { Student } from "./models/Student";
-import { createTable } from "./core/Table";
-import { And, StartsWith, EndsWith, Or, GreaterThen } from "./core/WhereOperators";
+import { createTable, Table } from "./core/Table";
+import { And, StartsWith, EndsWith, Or, GreaterThen, Equals, Contains } from "./core/WhereOperators";
 import { Func } from "./utils/Func";
-import { createLazyTable, createData } from "./core/LazyTable";
+import { createLazyTable } from "./core/LazyTable";
 
 
 //__TEST TABLE With dummy data__
@@ -25,12 +25,9 @@ let student_data = Cons(student1, Cons(student2, Cons(student3, Cons(student4,
 // Tables where the operation are on performed
 let students = createTable(student_data)
 
-// Lazy data is a Pair of List of Student and List of Unit, two equal length lists
-let lazy_data = createData(student_data)
 
 // A LazyTable which only returns a chain of composable functions to execute
 let lazy_students = createLazyTable<Student>()
-
 
 
 //__SELECT__
@@ -40,6 +37,7 @@ students.Select("name").Select("surname") or students.Select("name", "surname") 
 SELECT name, surname
 FROM students
 */
+
 
 let query1 = students.Select("name", "surname") // q1 and q2 have the same type
 let query2 = students.Select("name").Select("surname")
@@ -61,10 +59,10 @@ SELECT name, surname, courseId, grade
 FROM students, grades
 */
 
+
 let query4 = students.Select("name", "surname").Include("Grades", q => q.Select("grade", "studentId"))
 
 let lazy_query4 = lazy_students.Select("name", "surname").Include("Grades", q => q.Select("grade", "studentId"))
-
 
 
 //-------------------------------------------------
@@ -79,21 +77,14 @@ FROM students
 WHERE surname LIKE B% AND surname LIKE %n
 */
 
-let query5 = students.Select("name", "surname", "age").Where("surname", And(StartsWith("B"), EndsWith("n")))
-let query6 = students.Select("name", "surname", "age").Where("age", GreaterThen(25))
-let query7 = students.Select("name").Select("surname").Include("Grades", q => q.Select("grade")).Where("Grades", Func(grades => {
-    let sum = grades.reduce((s, x) => s + x.grade, 0)
-    let avg = sum / grades.length
-    return avg >= 5.5
-}))
+let query5 = students.Select("name", "surname", "age").Where(f => f.get("surname").StartsWith("B").And(f => f.get("surname").EndsWith("n")))//.Where(f => Equals(f.get("surname"), f.get("name")))
+let query6 = students.Select("name", "surname", "age").Where(f => f.get("age").GreaterThen(25))
+let query7 = students.Select("name").Select("surname").Include("Grades", q => q.Select("grade").Where(f => f.get("grade").GreaterThen(5.5)))
 
-let lazy_query5 = lazy_students.Select("name", "surname", "age").Where("surname", And(StartsWith("B"), EndsWith("n")))
-let lazy_query6 = lazy_students.Select("name", "surname", "age").Where("age", GreaterThen(25))
-let lazy_query7 = lazy_students.Select("name").Select("surname").Include("Grades", q => q.Select("grade")).Where("Grades", Func(grades => {
-    let sum = grades.reduce((s, x) => s + x.grade, 0)
-    let avg = sum / grades.length
-    return avg >= 5.5
-}))
+
+let lazy_query5 = lazy_students.Select("name", "surname", "age").Where(f => f.get("surname").StartsWith("B").And(f => f.get("surname").EndsWith("n")))
+let lazy_query6 = lazy_students.Select("name", "surname", "age").Where(f => f.get("age").GreaterThen(25))
+let lazy_query7 = lazy_students.Select("name").Select("surname").Include("Grades", q => q.Select("grade").Where(f => f.get("grade").GreaterThen(5.5)))
 
 
 //-------------------------------------------------
@@ -127,48 +118,59 @@ FROM students, grades
 GROUP BY name
 */
 
-let query10 = null! //TODO
+let query10 = null! // TODO
 
 
 // __Print result of the queries__
 
-//SELECT
+// // SELECT
 // console.log(query1.toList().toArray())
 // console.log(query2.toList().toArray())
 // console.log(query3.toList().toArray())
 
-// INCLUDE
+// // INCLUDE
 // console.log(query4.toList().toArray())
 
-// WHERE
+// // WHERE
 // console.log(query5.toList().toArray())
 // console.log(query6.toList().toArray())
 // console.log(query7.toList().toArray())
 
-// ORDER BY
+// // ORDER BY
 // console.log(query8.toList().toArray())
 // console.log(query9.toList().toArray())
 
 
 // __Execute the lazy queries, by applying the lazy_data to the query__
 
-// SELECT
-// console.log(lazy_query1.apply(lazy_data).toList().toArray())
-// console.log(lazy_query2.apply(lazy_data).toList().toArray())
-// console.log(lazy_query3.apply(lazy_data).toList().toArray())
+// // SELECT
+// console.log(lazy_query1.apply(students).toList().toArray())
+// console.log(lazy_query2.apply(students).toList().toArray())
+// console.log(lazy_query3.apply(students).toList().toArray())
 
-// INCLUDE throws a runtime exception
-// console.log(lazy_query4.apply(lazy_data).toList().toArray())
+// // INCLUDE
+// console.log(lazy_query4.apply(students).toList().toArray())
 
-// WHERE
-// console.log(lazy_query5.apply(lazy_data).toList().toArray())
-// console.log(lazy_query6.apply(lazy_data).toList().toArray())
-// console.log(lazy_query7.apply(lazy_data).toList().toArray())
+// // WHERE
+// console.log(lazy_query5.apply(students).toList().toArray())
+// console.log(lazy_query6.apply(students).toList().toArray())
+// console.log(lazy_query7.apply(students).toList().toArray())
 
-// ORDER BY
-// console.log(lazy_query8.apply(lazy_data).toList().toArray())
-// console.log(lazy_query9.apply(lazy_data).toList().toArray())
-
-
+// // ORDER BY
+// console.log(lazy_query8.apply(students).toList().toArray())
+// console.log(lazy_query9.apply(students).toList().toArray())
 
 
+
+/**
+ * Questions: 
+ * - Where operator [CHECK]
+ * - Pass an array of unique arguments to the Select operator
+ * - Split Table in different interfaces so you can't call i.e. Where before Select
+ * - How to implement GroupBy? Type signature and implementation
+*/
+
+// Is this worth 2.5 points?
+// I like the notation of because it is equivalent to the SQL notation of: SELECT name, age FROM students WHERE age >= 42 OR name = 'Carie'
+let sample = students.Select('name', 'age').Where(f => f.get('age').GreaterOrEquals(42).Or(f => f.get('name').Equals('Carie')))
+console.log(sample.toList().toArray())
