@@ -18,7 +18,7 @@ const merge = <T>(l1: List<T>, l2: List<T>, property: keyof T, order: keyof Comp
 
 export const mergeSort = <T>(list: List<T>, property: keyof T, order: keyof Comperator<T>): List<T> => {
     let size = list.count()
-    if (size == 1) {
+    if (size <= 1) {
         return list
     } else {
         let middle = Math.floor(size / 2 -1)

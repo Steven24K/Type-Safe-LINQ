@@ -8,10 +8,16 @@ This is an example of code:
 students.Select('name', 'age', 'gender')
     .Include('Courses', q =>
         q.Select('grade', 'name')
-            .Where(f => f.get('grade').GreaterOrEquals(5.5).Or(f => f.get('name').Equals('Software Engineering')))
+            .Where(f =>
+                f.get('grade').GreaterOrEquals(5.5)
+                    .And(f =>
+                        f.get('name').In(['Software Engineering', 'Development 8', 'Project 7/8'])))
             .OrderBy('grade', 'DESC'))
-    .Where(f => f.get('name').Between('F', 'Q').Or(f => f.get('age').In([25, 71, 45, 33])))
-    .OrderBy('name', 'ASC')
+    .Where(f =>
+        f.get('name').Between('A', 'M')
+            .And(f =>
+                f.get('age').GreaterOrEquals(21)))
+    .OrderBy('age', 'DESC')
 ```
 
 ## Dependencies 

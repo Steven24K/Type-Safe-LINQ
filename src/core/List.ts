@@ -88,7 +88,7 @@ const ListOperations = <T>(): ListOperations<T> => ({
     },
     splitAt: function (this: List<T>, i: number): Pair<List<T>, List<T>> {
         if (this.Kind == "Empty") {
-            throw "Cannot split empty list"
+            return Pair(Empty(), Empty())
         } else if(i == 0) {
             return Pair(Cons(this.Head, Empty()), this.Tail)
         } else {
