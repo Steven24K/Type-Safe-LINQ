@@ -16,6 +16,7 @@ type WhereOperator<T, a> = {
     Contains: (this: WhereOperator<T, string>, name: string) => FilterCondition<T>
     StartsWith: (this: WhereOperator<T, string>, name: string) => FilterCondition<T>
     EndsWith: (this: WhereOperator<T, string>, name: string) => FilterCondition<T>
+    In: (this: WhereOperator<T, a>, array: Array<a>) => FilterCondition<T>
 } 
 
 
@@ -68,6 +69,9 @@ const WhereOperator = <T, a>(e: T, v: a): WhereOperator<T, a> => ({
     },
     StartsWith: function (this: WhereOperator<T, string>, name: string): FilterCondition<T> {
         return FilterCondition(this.entity, this.value.startsWith(name))
+    }, 
+    In: function (this: WhereOperator<T, a>, array: Array<a>): FilterCondition<T> {
+        return FilterCondition(this.entity, array.includes(this.value))
     }
 })
 

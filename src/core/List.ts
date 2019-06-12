@@ -107,7 +107,8 @@ const ListOperations = <T>(): ListOperations<T> => ({
             throw "Something went wrong exception"
         }
     }, 
-    // Can only sort in ASC order, it is recommended to use List.sort
+    // Can only sort in ASC order, it is recommended to use List.sort wich can sort in both ways
+    // This is just a support method for List.sort
     merge: function (this: List<T>, list: List<T>, order: Comparers): List<T> {
         if (this.Kind == "Empty") {
             return list
@@ -146,4 +147,3 @@ export const Empty = <T>(): List<T> => ({
     Kind: "Empty",
     ...ListOperations()
 })
-

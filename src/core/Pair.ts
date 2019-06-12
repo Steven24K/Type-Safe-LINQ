@@ -1,6 +1,5 @@
 import { IdentityLambda } from "../utils/IdentityLambda";
 
-
 interface PairType<T, U> {
     First: T,
     Second: U

@@ -1,9 +1,7 @@
 import { List, Cons } from "../core/List";
 import { Comperator } from "./Comperator";
 
-
-
-// support method for OrderBy, using mergeSort
+// support method for Table.OrderBy, using mergeSort
 const merge = <T>(l1: List<T>, l2: List<T>, property: keyof T, order: keyof Comperator<T>): List<T> => {
     if (l1.Kind == "Empty") {
         return l2

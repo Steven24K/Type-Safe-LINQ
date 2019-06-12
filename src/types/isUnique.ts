@@ -34,4 +34,4 @@ let Select = <K extends Array<keyof Student>>(s: Student, ...props: K & IsUnique
     return pickMany(s, props)
 }
 
-Select({id: 0, name: "", surname: "", age: 4, Grades: Empty(), email: ""}, 'name', 'age', 'email')
+Select({name: "", surname: "", age: 4, gender: 'male' ,Courses: Empty()}, 'name', 'age')
