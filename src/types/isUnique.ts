@@ -23,15 +23,19 @@ type UK8<T extends any[], TErr, TOk> = T extends [] ? TOk : T[0] extends Tail<T>
 type UK9<T extends any[], TErr, TOk> = T extends [] ? TOk : T[0] extends Tail<T>[number] ? TErr : UK10<Tail<T>, TErr, TOk>
 type UK10<T extends any[], TErr, TOk> = T extends [] ? TOk : T[0] extends Tail<T>[number] ? TErr : UK11<Tail<T>, TErr, TOk>
 
-type UK11<T extends any[], TErr, TOk> = T extends [] ? TOk : T[0] extends Tail<T>[number] ? TErr : "Array can only contain 10 unique elements"  
+type UK11<T extends any[], TErr, TOk> = T extends [] ? TOk : T[0] extends Tail<T>[number] ? TErr : "Array can only contain 10 unique elements"
 
 export type IsUnique<T extends any[]> = UK0<T, "There are duplicate values in the Array", {}>
 
 
 // example
 
+let student: Student = { name: "", surname: "", age: 4, gender: 'male', Courses: Empty() }
+
 let Select = <K extends Array<keyof Student>>(s: Student, ...props: K & IsUnique<K>): Pick<Student, K[number]> => {
     return pickMany(s, props)
 }
 
-Select({name: "", surname: "", age: 4, gender: 'male' ,Courses: Empty()}, 'name', 'age')
+
+
+

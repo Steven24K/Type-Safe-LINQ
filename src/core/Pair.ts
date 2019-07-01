@@ -1,4 +1,5 @@
 import { IdentityLambda } from "../utils/IdentityLambda";
+import { List, Cons, Empty } from "./List";
 
 interface PairType<T, U> {
     First: T,

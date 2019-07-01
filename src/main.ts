@@ -3,6 +3,7 @@ import { Student } from "./models/Student";
 import { createTable } from "./core/Table";
 import { createLazyTable } from "./core/LazyTable";
 import { Course } from "./models/Course";
+import { DataGenerator } from "./utils/DataGenerator";
 
 /**
  * **TODO**: 
@@ -12,171 +13,14 @@ import { Course } from "./models/Course";
  * - Unit tests [CHECK]
  * - Clean code [CHECK]
  * - Documentation + README [CHECK]
+ * - Make random data generator [CHECK]
  * - Pass an array of unique arguments to the Select operator *A new implementation of the pickMany and omitMany is needed*
  * - How to implement GroupBy? Type signature and implementation *A 9 is also good enough*
- * - Prepare for presentation, going for 9 points:) yeaaaaaah!
 */
 
 
 //__TEST TABLE With dummy data__ put all data in one List
-let student_data = ListFromArray([
-    Student('George', 'Strait', 67, 'male', ListFromArray([
-        Course('Software Engineering', 9, 30),
-        Course('Development 8', 8, 4),
-        Course('Project 7/8', 9, 8),
-        Course('Analysis 7', 7.5, 3),
-        Course('Development 1', 10, 4),
-        Course('Project Webshop', 8, 8),
-        Course('Analysis 5', 3, 8),
-        Course('SLC', 10, 1),
-        Course('Internship', 8, 29)
-    ])),
-
-    Student('Brad', 'Paisley', 46, 'male', ListFromArray([
-        Course('Software Engineering', 5.5, 30),
-        Course('Development 8', 3, 4),
-        Course('Project 7/8', 5.6, 8),
-        Course('Analysis 7', 3.2, 3),
-        Course('Development 1', 8, 4),
-        Course('Project Webshop', 5.4, 8),
-        Course('Analysis 5', 9.8, 8),
-        Course('SLC', 7, 1),
-        Course('Internship', 7.8, 29)
-    ])),
-
-    Student('Kane', 'Brown', 25, 'male', ListFromArray([
-        Course('Software Engineering', 7.5, 30),
-        Course('Development 8', 6.5, 4),
-        Course('Project 7/8', 9.2, 8),
-        Course('Analysis 7', 4.5, 3),
-        Course('Development 1', 1.5, 4),
-        Course('Project Webshop', 4.3, 8),
-        Course('Analysis 5', 6.9, 8),
-        Course('SLC', 5.5, 1),
-        Course('Internship', 3, 29)
-    ])),
-
-    Student('Luke', 'Bryan', 25, 'male', ListFromArray([
-        Course('Software Engineering', 4.5, 30),
-        Course('Development 8', 3.2, 4),
-        Course('Project 7/8', 3, 8),
-        Course('Analysis 7', 7.5, 3),
-        Course('Development 1', 6.6, 4),
-        Course('Project Webshop', 8, 8),
-        Course('Analysis 5', 3, 8),
-        Course('SLC', 10, 1),
-        Course('Internship', 3.4, 29)
-    ])),
-
-    Student('Keith', 'Urban', 51, 'male', ListFromArray([
-        Course('Software Engineering', 9, 30),
-        Course('Development 8', 8, 4),
-        Course('Project 7/8', 9, 8),
-        Course('Analysis 7', 7.5, 3),
-        Course('Development 1', 1.2, 4),
-        Course('Project Webshop', 8, 8),
-        Course('Analysis 5', 3.8, 8),
-        Course('SLC', 10, 1),
-        Course('Internship', 6.5, 29)
-    ])),
-
-    Student('Blake', 'Shelton', 42, 'male', ListFromArray([
-        Course('Software Engineering', 9, 30),
-        Course('Development 8', 8, 4),
-        Course('Project 7/8', 9, 8),
-        Course('Analysis 7', 7.5, 3),
-        Course('Development 1', 10, 4),
-        Course('Project Webshop', 8, 8),
-        Course('Analysis 5', 3, 8),
-        Course('SLC', 10, 1),
-        Course('Internship', 8, 29)
-    ])),
-
-    Student('Carie', 'Underwood', 36, 'female', ListFromArray([
-        Course('Software Engineering', 9, 30),
-        Course('Development 8', 8, 4),
-        Course('Project 7/8', 9, 8),
-        Course('Analysis 7', 7.5, 3),
-        Course('Development 1', 10, 4),
-        Course('Project Webshop', 8, 8),
-        Course('Analysis 5', 3, 8),
-        Course('SLC', 10, 1),
-        Course('Internship', 8, 29)
-    ])),
-
-    Student('Miranda', 'Lambert', 35, 'female', ListFromArray([
-        Course('Software Engineering', 9, 30),
-        Course('Development 8', 8, 4),
-        Course('Project 7/8', 9, 8),
-        Course('Analysis 7', 7.5, 3),
-        Course('Development 1', 8.4, 4),
-        Course('Project Webshop', 8, 8),
-        Course('Analysis 5', 3, 8),
-        Course('SLC', 10, 1),
-        Course('Internship', 8, 29)
-    ])),
-
-    Student('Ruud', 'Hermans', 60, 'male', ListFromArray([
-        Course('Software Engineering', 9, 30),
-        Course('Development 8', 8, 4),
-        Course('Project 7/8', 9.6, 8),
-        Course('Analysis 7', 7.5, 3),
-        Course('Development 1', 10, 4),
-        Course('Project Webshop', 8, 8),
-        Course('Analysis 5', 3, 8),
-        Course('SLC', 10, 1),
-        Course('Internship', 8, 29)
-    ])),
-
-    Student('Johny', 'Cash', 71, 'male', ListFromArray([
-        Course('Software Engineering', 9, 30),
-        Course('Development 8', 8, 4),
-        Course('Project 7/8', 9, 8),
-        Course('Analysis 7', 7.5, 3),
-        Course('Development 1', 4, 4),
-        Course('Project Webshop', 8, 8),
-        Course('Analysis 5', 3.5, 8),
-        Course('SLC', 10, 1),
-        Course('Internship', 8, 29)
-    ])),
-
-    Student('Willie', 'Nelson', 86, 'male', ListFromArray([
-        Course('Software Engineering', 9, 30),
-        Course('Development 8', 8, 4),
-        Course('Project 7/8', 9, 8),
-        Course('Analysis 7', 7.5, 3),
-        Course('Development 1', 10, 4),
-        Course('Project Webshop', 2.3, 8),
-        Course('Analysis 5', 3, 8),
-        Course('SLC', 10, 1),
-        Course('Internship', 8, 29)
-    ])),
-
-    Student('Kacey', 'Musgraves', 30, 'female', ListFromArray([
-        Course('Software Engineering', 9, 30),
-        Course('Development 8', 8, 4),
-        Course('Project 7/8', 4.5, 8),
-        Course('Analysis 7', 7.5, 3),
-        Course('Development 1', 10, 4),
-        Course('Project Webshop', 8, 8),
-        Course('Analysis 5', 3, 8),
-        Course('SLC', 10, 1),
-        Course('Internship', 8, 29)
-    ])),
-
-    Student('Zac', 'Brown', 40, 'male', ListFromArray([
-        Course('Software Engineering', 9, 30),
-        Course('Development 8', 8, 4),
-        Course('Project 7/8', 3.4, 8),
-        Course('Analysis 7', 7.2, 3),
-        Course('Development 1', 10, 4),
-        Course('Project Webshop', 8, 8),
-        Course('Analysis 5', 3, 8),
-        Course('SLC', 10, 1),
-        Course('Internship', 8, 29)
-    ])),
-])
-
+let student_data = DataGenerator(1000)
 
 // Tables where the operation are on performed
 let students = createTable(student_data)
@@ -185,17 +29,17 @@ let students = createTable(student_data)
 let lazy_students = createLazyTable<Student>()
 
 // Just a complex example query that uses all operators
-let sample = students.Select('name', 'age', 'gender')
+let sample = students.Select('name', 'surname').Select('age', 'gender')
     .Include('Courses', q =>
         q.Select('grade', 'name')
             .Where(f =>
                 f.get('grade').GreaterOrEquals(5.5)
-                    .And(f =>
+                    .Or(f =>
                         f.get('name').In(['Software Engineering', 'Development 8', 'Project 7/8'])))
             .OrderBy('grade', 'DESC'))
     .Where(f =>
         f.get('name').Between('A', 'M')
-            .And(f =>
+            .Or(f =>
                 f.get('age').GreaterOrEquals(21)))
     .OrderBy('age', 'DESC')
 
@@ -312,7 +156,4 @@ let lazy_query9 = lazy_students.Select("name", "surname").OrderBy("name", "ASC")
  * GROUP BY name
  */
 let query10 = null! // TODO
-
-
-
 

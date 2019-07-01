@@ -2,7 +2,7 @@ import { List, Empty, merge_list_types, createList, Cons } from "./List";
 import { Pair } from "./Pair";
 import { Omit, omitMany, omitOne } from "../utils/Omit";
 import { Unit } from "../types/Unit";
-import { pickMany } from "../utils/Pick";
+import { pickMany, pickOne } from "../utils/Pick";
 import { Filter } from "../types/PickIf";
 import { ListType } from "../types/ListType";
 import { Comperator } from "../utils/Comperator";
@@ -13,6 +13,7 @@ import { FilterBuilder, FilterCondition } from "./FilterBuilder";
 export interface initialTable<T> {
     data: Data<T, Unit>
     Select: <K extends keyof T>(this: initialTable<T>, ...properties: K[]) => Table<Omit<T, K>, Pick<T, K>>
+
 }
 
 export interface Table<T, U> {
@@ -26,9 +27,11 @@ export interface Table<T, U> {
     ) =>
         Table<Omit<T, K>, U & { [key in K]: /*List( We use Array for prety printing)*/Array<Pick<ListType<T[K]>, P>> }>
 
-    Where: (filter: (_: FilterBuilder<U>) => FilterCondition<U>) => Table<T, U>
+    Where: (filter: (_: FilterBuilder<T & U>) => FilterCondition<T & U>) => Table<T, U>
 
     OrderBy: <K extends keyof U>(attribute: K, order?: keyof Comperator<T>) => Table<T, U>
+
+    GroupBy: <K extends keyof U>(attribute: K) => Table<T, U>
 
     toList: (this: Table<T, U>) => List<U>
 }
@@ -66,17 +69,29 @@ export const Table = <T, U>(data: Data<T, U>): Table<T, U> => ({
         ))
     },
 
-    Where: function (filter: (_: FilterBuilder<U>) => FilterCondition<U>): Table<T, U> {
-        return Table(this.data.mapRight(second => second.reduce((s, x) => {
-            if (filter(FilterBuilder(x)).condition) {
-                return Cons(x, s)
+    Where: function (filter: (_: FilterBuilder<T & U>) => FilterCondition<T & U>): Table<T, U> {
+        let tmp_First = this.data.First
+        let tmp_Second = this.data.Second
+        let result = Empty<U>()
+        while (tmp_First.Kind != 'Empty' && tmp_Second.Kind != 'Empty') {
+            if (filter(FilterBuilder({ ...tmp_First.Head, ...tmp_Second.Head })).condition) {
+                result = Cons(tmp_Second.Head, result)
             }
-            return s
-        }, Empty<U>()).reverse()))
+            tmp_First = tmp_First.Tail
+            tmp_Second = tmp_Second.Tail
+        }
+        return Table(Pair(this.data.First, result.reverse()))
+
     },
 
     OrderBy: function <K extends keyof U>(attribute: K, order: keyof Comperator<T> = "ASC"): Table<T, U> {
         return Table(this.data.mapRight(l => mergeSort(l, attribute, order)))
+    },
+
+    GroupBy: function <K extends keyof U>(attribute: K): Table<T, U> {
+        let grouped = this.data.Second.map(x => pickOne(x, attribute))
+        //[{ age: 21 }, { age: 21 }, { age: 23 }, { age: 24}, { age: 24 }]
+        return null!
     },
 
     toList: function (this: Table<T, U>): List<U> {
