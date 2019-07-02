@@ -1,9 +1,9 @@
-import { Cons, Empty, ListFromArray } from "./core/List";
 import { Student } from "./models/Student";
 import { createTable } from "./core/Table";
 import { createLazyTable } from "./core/LazyTable";
-import { Course } from "./models/Course";
 import { DataGenerator } from "./utils/DataGenerator";
+import { ListFromArray } from "./core/List";
+import { Course } from "./models/Course";
 
 /**
  * **TODO**: 
@@ -16,11 +16,14 @@ import { DataGenerator } from "./utils/DataGenerator";
  * - Make random data generator [CHECK]
  * - Pass an array of unique arguments to the Select operator *A new implementation of the pickMany and omitMany is needed*
  * - How to implement GroupBy? Type signature and implementation *A 9 is also good enough*
+ * 
+ * - Change the order of the operations In SQL SELECT name FROM students WHERE age > 21 ORDER BY surname DESC should be ...
+ * students.Where(f => f.get('age').GreaterThen(21)).OrderBy('surname', 'DESC').Select('name')
 */
 
 
-//__TEST TABLE With dummy data__ put all data in one List
-let student_data = DataGenerator(1000)
+//__TEST TABLE With dummy data
+let student_data = DataGenerator(100)
 
 // Tables where the operation are on performed
 let students = createTable(student_data)
@@ -29,21 +32,23 @@ let students = createTable(student_data)
 let lazy_students = createLazyTable<Student>()
 
 // Just a complex example query that uses all operators
-let sample = students.Select('name', 'surname').Select('age', 'gender')
+let sample = students.Where(f =>
+    f.get('age').GreaterOrEquals(21).
+        Or(f =>
+            f.get('name').Between('A', 'P')))
+    .OrderBy('age', 'ASC')
+    .Select('name', 'surname').Select('age')
     .Include('Courses', q =>
-        q.Select('grade', 'name')
-            .Where(f =>
-                f.get('grade').GreaterOrEquals(5.5)
-                    .Or(f =>
-                        f.get('name').In(['Software Engineering', 'Development 8', 'Project 7/8'])))
-            .OrderBy('grade', 'DESC'))
-    .Where(f =>
-        f.get('name').Between('A', 'M')
-            .Or(f =>
-                f.get('age').GreaterOrEquals(21)))
-    .OrderBy('age', 'DESC')
+        q.Where(f =>
+            f.get('grade').GreaterOrEquals(5.5)
+                .Or(f =>
+                    f.get('studypoints').Between(8, 30))
+                .Or(f =>
+                    f.get('name').In(['Software Engineering', 'Project 7/8', 'Acting'])))
+            .OrderBy('name', 'DESC')
+            .Select('name', 'grade'))
 
-console.log(sample.toList().toArray())
+// console.log(sample.toList().toArray())
 
 
 /**
@@ -102,17 +107,17 @@ let lazy_query4 = lazy_students.Select("name", "surname").Include("Courses", q =
  * FROM students
  * WHERE age > 25
  */
-let query5 = students.Select("name", "surname", "age").Where(f => f.get("surname").StartsWith("B").And(f => f.get("surname").EndsWith("n")))
-let query6 = students.Select("name", "surname", "age").Where(f => f.get("age").GreaterThen(25))
-let query7 = students.Select("name").Select("surname").Include("Courses", q => q.Select("grade").Where(f => f.get("grade").GreaterThen(5.5)))
+let query5 = students.Where(f => f.get("surname").StartsWith("B").And(f => f.get("surname").EndsWith("n"))).Select("name", "surname", "age")
+let query6 = students.Where(f => f.get("age").GreaterThen(25)).Select("name", "surname", "age")
+let query7 = students.Select("name").Select("surname").Include("Courses", q => q.Where(f => f.get("grade").GreaterThen(5.5)).Select("grade"))
 
 // console.log(query5.toList().toArray())
 // console.log(query6.toList().toArray())
 // console.log(query7.toList().toArray())
 
-let lazy_query5 = lazy_students.Select("name", "surname", "age").Where(f => f.get("surname").StartsWith("B").And(f => f.get("surname").EndsWith("n")))
-let lazy_query6 = lazy_students.Select("name", "surname", "age").Where(f => f.get("age").GreaterThen(25))
-let lazy_query7 = lazy_students.Select("name").Select("surname").Include("Courses", q => q.Select("grade").Where(f => f.get("grade").GreaterThen(5.5)))
+let lazy_query5 = lazy_students.Where(f => f.get("surname").StartsWith("B").And(f => f.get("surname").EndsWith("n"))).Select("name", "surname", "age")
+let lazy_query6 = lazy_students.Where(f => f.get("age").GreaterThen(25)).Select("name", "surname", "age")
+let lazy_query7 = lazy_students.Select("name").Select("surname").Include("Courses", q => q.Where(f => f.get("grade").GreaterThen(5.5)).Select("grade"))
 
 // console.log(lazy_query5.apply(students).toList().toArray())
 // console.log(lazy_query6.apply(students).toList().toArray())
@@ -131,14 +136,14 @@ let lazy_query7 = lazy_students.Select("name").Select("surname").Include("Course
  * ORDER BY age DESC
  */
 
-let query8 = students.Select("name", "surname", "age").OrderBy("age", "DESC")
-let query9 = students.Select("name", "surname").OrderBy("name", "ASC")
+let query8 = students.OrderBy("age", "DESC").Select("name", "surname", "age")
+let query9 = students.OrderBy("name", "ASC").Select("name", "surname")
 
 // console.log(query8.toList().toArray())
 // console.log(query9.toList().toArray())
 
-let lazy_query8 = lazy_students.Select("name", "surname", "age").OrderBy("age", "DESC")
-let lazy_query9 = lazy_students.Select("name", "surname").OrderBy("name", "ASC")
+let lazy_query8 = lazy_students.OrderBy("age", "DESC").Select("name", "surname", "age")
+let lazy_query9 = lazy_students.OrderBy("name", "ASC").Select("name", "surname")
 
 // console.log(lazy_query8.apply(students).toList().toArray())
 // console.log(lazy_query9.apply(students).toList().toArray())
@@ -155,5 +160,17 @@ let lazy_query9 = lazy_students.Select("name", "surname").OrderBy("name", "ASC")
  * FROM students, grades
  * GROUP BY name
  */
-let query10 = null! // TODO
 
+// TODO
+
+// let query10 = students.GroupBy('age').Select('age', 'name')
+
+// let lazy_query10 = lazy_students.Select('age', 'name') //.GroupBy('age')
+
+
+let experiment = lazy_students.Where(f => f.get('name').Equals('Steven').And(f => f.get('surname').Equals('Koerts').Or(f => f.get('gender').Equals('female'))))
+    .Select('name').Select('surname').Select('gender')
+
+let result = experiment.apply(students)
+
+console.log(result.toList().toArray())

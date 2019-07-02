@@ -10,11 +10,6 @@ import { mergeSort } from "../utils/mergeSort";
 import { Data } from "../types/Data";
 import { FilterBuilder, FilterCondition } from "./FilterBuilder";
 
-export interface initialTable<T> {
-    data: Data<T, Unit>
-    Select: <K extends keyof T>(this: initialTable<T>, ...properties: K[]) => Table<Omit<T, K>, Pick<T, K>>
-
-}
 
 export interface Table<T, U> {
     data: Data<T, U>
@@ -23,29 +18,19 @@ export interface Table<T, U> {
 
     Include: <K extends Filter<T, List<any>>, P extends keyof ListType<T[K]>>(
         record: K,
-        q: (_: initialTable<ListType<T[K]>>) => Table<Omit<ListType<T[K]>, P>, Pick<ListType<T[K]>, P>>
+        q: (_: Table<ListType<T[K]>, Unit>) => Table<Omit<ListType<T[K]>, P>, Pick<ListType<T[K]>, P>>
     ) =>
-        Table<Omit<T, K>, U & { [key in K]: /*List( We use Array for prety printing)*/Array<Pick<ListType<T[K]>, P>> }>
+        Table<Omit<T, K>, U & { [key in K]: /*List(We use Array for prety printing)*/Array<Pick<ListType<T[K]>, P>> }>
 
-    Where: (filter: (_: FilterBuilder<T & U>) => FilterCondition<T & U>) => Table<T, U>
+    Where: (filter: (_: FilterBuilder<T>) => FilterCondition<T>) => Table<T, U>
 
-    OrderBy: <K extends keyof U>(attribute: K, order?: keyof Comperator<T>) => Table<T, U>
+    OrderBy: <K extends keyof T>(attribute: K, order?: keyof Comperator<T>) => Table<T, U>
 
-    GroupBy: <K extends keyof U>(attribute: K) => Table<T, U>
+    GroupBy: <K extends keyof T>(attribute: K) => Table<T, U>
 
     toList: (this: Table<T, U>) => List<U>
 }
 
-export const initialTable = <T>(data: Data<T, Unit>): initialTable<T> => ({
-    data: data,
-
-    Select: function <K extends keyof T>(this: initialTable<T>, ...properties: K[]): Table<Omit<T, K>, Pick<T, K>> {
-        return Table(this.data.map(
-            first => first.map(entry => omitMany(entry, properties)),
-            second => merge_list_types(second.zip(this.data.First.map(entry => pickMany(entry, properties))))
-        ))
-    }
-})
 
 export const Table = <T, U>(data: Data<T, U>): Table<T, U> => ({
     data: data,
@@ -59,7 +44,7 @@ export const Table = <T, U>(data: Data<T, U>): Table<T, U> => ({
 
     Include: function <K extends Filter<T, List<any>>, P extends keyof ListType<T[K]>>(
         record: K,
-        q: (_: initialTable<ListType<T[K]>>) => Table<Omit<ListType<T[K]>, P>, Pick<ListType<T[K]>, P>>
+        q: (_: Table<ListType<T[K]>, Unit>) => Table<Omit<ListType<T[K]>, P>, Pick<ListType<T[K]>, P>>
     ):
         Table<Omit<T, K>, U & { [key in K]: Array<Pick<ListType<T[K]>, P>> }> {
         return Table(this.data.map(
@@ -69,29 +54,38 @@ export const Table = <T, U>(data: Data<T, U>): Table<T, U> => ({
         ))
     },
 
-    Where: function (filter: (_: FilterBuilder<T & U>) => FilterCondition<T & U>): Table<T, U> {
-        let tmp_First = this.data.First
-        let tmp_Second = this.data.Second
-        let result = Empty<U>()
-        while (tmp_First.Kind != 'Empty' && tmp_Second.Kind != 'Empty') {
-            if (filter(FilterBuilder({ ...tmp_First.Head, ...tmp_Second.Head })).condition) {
-                result = Cons(tmp_Second.Head, result)
+    Where: function (filter: (_: FilterBuilder<T>) => FilterCondition<T>): Table<T, U> {
+        let conditions: boolean[] = []
+
+        // Filter the first list and store the condition in an array
+        let list_T = this.data.First.reduce((s, x) => {
+            let cond = filter(FilterBuilder(x)).condition
+            conditions.push(cond)
+            if (cond) {
+                return Cons(x, s)
+            } 
+            return s
+        }, Empty<T>())
+        
+        // Filter the second list based on the result of the first list
+        let list_U = this.data.Second.reduce((s, x) => {
+            if (conditions.pop()) {
+                return Cons(x, s)
             }
-            tmp_First = tmp_First.Tail
-            tmp_Second = tmp_Second.Tail
-        }
-        return Table(Pair(this.data.First, result.reverse()))
+            return s
+        }, Empty<U>())
 
+        return Table(Pair(list_T.reverse(), list_U.reverse()))
     },
 
-    OrderBy: function <K extends keyof U>(attribute: K, order: keyof Comperator<T> = "ASC"): Table<T, U> {
-        return Table(this.data.mapRight(l => mergeSort(l, attribute, order)))
+    OrderBy: function <K extends keyof T>(attribute: K, order: keyof Comperator<T> = "ASC"): Table<T, U> {
+        return Table(this.data.mapLeft(l => mergeSort(l, attribute, order)))
     },
 
-    GroupBy: function <K extends keyof U>(attribute: K): Table<T, U> {
-        let grouped = this.data.Second.map(x => pickOne(x, attribute))
+    GroupBy: function <K extends keyof T>(attribute: K): Table<T, U> {
+        let grouped = this.data.First.map(x => pickOne(x, attribute))
         //[{ age: 21 }, { age: 21 }, { age: 23 }, { age: 24}, { age: 24 }]
-        return null!
+        throw 'Not implemented yet'
     },
 
     toList: function (this: Table<T, U>): List<U> {
@@ -100,6 +94,6 @@ export const Table = <T, U>(data: Data<T, U>): Table<T, U> => ({
 })
 
 // Factory method to create a table
-export const createTable = <T>(list: List<T>): initialTable<T> => {
-    return initialTable(Pair(list, createList(list.count())))
+export const createTable = <T>(list: List<T>): Table<T, Unit> => {
+    return Table(Pair(list, createList(list.count())))
 }

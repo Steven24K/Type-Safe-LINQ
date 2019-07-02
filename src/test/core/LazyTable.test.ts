@@ -75,11 +75,13 @@ test(`test LazyTable.Include`, () => {
 })
 
 test(`test LazyTable.Where`, () => {
-    let query = lazy_table.Select('name', 'age')
+    let query = lazy_table.Where(f => f.get('age').Equals(21))
+        .Select('name', 'age')
         .Include('Courses', q =>
-            q.Select('grade', 'name')
-                .Where(f => f.get('grade').GreaterOrEquals(9)))
-        .Where(f => f.get('age').Equals(21))
+            q.Where(f => f.get('grade').GreaterOrEquals(9))
+                .Select('grade', 'name')
+        )
+
     let result = [
         {
             name: 'Steven',
@@ -102,7 +104,7 @@ test(`test LazyTable.Where`, () => {
 
 
 test(`test LazyTable.OrderBy`, () => {
-    let query = lazy_table.Select('name').Include('Courses', q => q.Select('grade', 'name').OrderBy('grade', 'ASC'))
+    let query = lazy_table.Select('name').Include('Courses', q => q.OrderBy('grade', 'ASC').Select('grade', 'name'))
     let result = [
         {
             name: 'Steven',

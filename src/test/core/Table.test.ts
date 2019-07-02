@@ -10,7 +10,8 @@ let table = createTable(
             Student(
                 'Steven',
                 'Koerts',
-                21, 'male',
+                21, 
+                'male',
                 ListFromArray(
                     [
                         Course('Software Engineering', 9, 30),
@@ -74,11 +75,13 @@ test(`test Table.Include`, () => {
 })
 
 test(`test Table.Where`, () => {
-    let query = table.Select('name', 'age')
+    let query = table.Where(f => f.get('age').Equals(21))
+        .Select('name', 'age')
         .Include('Courses', q =>
-            q.Select('grade', 'name')
-                .Where(f => f.get('grade').GreaterOrEquals(9)))
-        .Where(f => f.get('age').Equals(21))
+            q.Where(f => f.get('grade').GreaterOrEquals(9))
+                .Select('grade', 'name')
+        )
+
     let result = [
         {
             name: 'Steven',
@@ -101,7 +104,7 @@ test(`test Table.Where`, () => {
 
 
 test(`test Table.OrderBy`, () => {
-    let query = table.Select('name').Include('Courses', q => q.Select('grade', 'name').OrderBy('grade', 'ASC'))
+    let query = table.Select('name').Include('Courses', q => q.OrderBy('grade', 'ASC').Select('grade', 'name'))
     let result = [
         {
             name: 'Steven',
