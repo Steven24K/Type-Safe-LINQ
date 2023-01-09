@@ -36,14 +36,14 @@ let sample = students.Select('name', 'surname').Select('age', 'gender')
                 f.get('grade').GreaterOrEquals(5.5)
                     .Or(f =>
                         f.get('name').In(['Software Engineering', 'Development 8', 'Project 7/8'])))
-            .OrderBy('grade', 'DESC'))
+            .OrderBy('grade', 'ASC'))
     .Where(f =>
-        f.get('name').Between('A', 'M')
+        f.get('name').StartsWith('Ste')
             .Or(f =>
-                f.get('age').GreaterOrEquals(21)))
+                f.get('age').Equals(21)))
     .OrderBy('age', 'DESC')
 
-console.log(sample.toList().toArray())
+// console.log(sample.toList().toArray())
 
 
 /**
@@ -106,6 +106,7 @@ let query5 = students.Select("name", "surname", "age").Where(f => f.get("surname
 let query6 = students.Select("name", "surname", "age").Where(f => f.get("age").GreaterThen(25))
 let query7 = students.Select("name").Select("surname").Include("Courses", q => q.Select("grade").Where(f => f.get("grade").GreaterThen(5.5)))
 
+
 // console.log(query5.toList().toArray())
 // console.log(query6.toList().toArray())
 // console.log(query7.toList().toArray())
@@ -147,6 +148,14 @@ let lazy_query9 = lazy_students.Select("name", "surname").OrderBy("name", "ASC")
 
 
 /**
+ * **COUNT**
+ */
+let query11 = students.Select('name').Count('name')
+
+console.log(query11.toList().toArray())
+
+
+/**
  * **GROUP BY**
  * 
  * students.Select('name').Include('Courses', q => q.Select("grade")).GroupBy(???)
@@ -156,4 +165,10 @@ let lazy_query9 = lazy_students.Select("name", "surname").OrderBy("name", "ASC")
  * GROUP BY name
  */
 let query10 = null! // TODO
+
+
+
+
+
+
 

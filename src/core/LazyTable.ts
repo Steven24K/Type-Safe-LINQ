@@ -2,7 +2,7 @@ import { Func, Identity } from "../utils/Func";
 import { Omit } from "../utils/Omit";
 import { List } from "./List";
 import { Unit } from "../types/Unit";
-import { Filter } from "../types/PickIf";
+import { Filter, PickIf } from "../types/PickIf";
 import { ListType } from "../types/ListType";
 import { Comperator } from "../utils/Comperator";
 import { Table, initialTable } from "./Table";
@@ -27,7 +27,7 @@ interface LazyTable<T1, T2, U> {
         q: (_: initialTable<ListType<T2[K]>>) => Table<Omit<ListType<T2[K]>, P>, Pick<ListType<T2[K]>, P>>
     ) => LazyTable<T1, Omit<T2, K>, U & { [key in K]: Array<Pick<ListType<T2[K]>, P>> }>
 
-    Where: (filter: (_: FilterBuilder<T2 & U>) => FilterCondition<T2 & U>) => LazyTable<T1, T2, U>
+    Where: (filter: (_: FilterBuilder<PickIf<T2 & U, string | number | boolean>>) => FilterCondition<PickIf<T2 & U, string | number | boolean>>) => LazyTable<T1, T2, U>
 
     OrderBy: <K extends keyof U>(attribute: K, order?: keyof Comperator<T2>) => LazyTable<T1, T2, U>
 
@@ -56,7 +56,7 @@ const LazyTable = <T1, T2, U>(q: Query<T1, T2, U>): LazyTable<T1, T2, U> => ({
         return LazyTable(this.query.then(Func(table => table.Include(record, q))))
     },
 
-    Where: function (filter: (_: FilterBuilder<T2 & U>) => FilterCondition<T2 & U>): LazyTable<T1, T2, U> {
+    Where: function (filter: (_: FilterBuilder<PickIf<T2 & U, string | number | boolean>>) => FilterCondition<PickIf<T2 & U, string | number | boolean>>): LazyTable<T1, T2, U> {
         return LazyTable(this.query.then(Func(table => table.Where(filter))))
     },
 
